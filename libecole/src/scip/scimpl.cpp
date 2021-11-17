@@ -1,15 +1,23 @@
 #include <algorithm>
+#include <atomic>
 #include <cassert>
+#include <memory>
 #include <mutex>
+#include <scip/def.h>
+#include <scip/type_history.h>
+#include <scip/type_result.h>
+#include <scip/type_retcode.h>
 #include <utility>
 
 #include <objscip/objbranchrule.h>
 #include <objscip/objheur.h>
+#include <objscip/objsepa.h>
 #include <scip/scip.h>
 #include <scip/scipdefplugins.h>
 
 #include "ecole/scip/scimpl.hpp"
 #include "ecole/scip/utils.hpp"
+#include "ecole/utility/reverse-control.hpp"
 
 #include "utility/reverse-control.hpp"
 
@@ -67,6 +75,28 @@ private:
 	int trials_per_node;
 };
 
+}  // namespace
+
+/***********************************
+ *  Declaration of the Seperator  *
+ ***********************************/
+
+namespace {
+
+class CuttingSeparator : public ::scip::ObjSepa {
+public:
+	static constexpr int max_priority = 536870911;
+	static constexpr int frequency = 7;  // frequency at which the exec is called
+	static constexpr SCIP_Real no_maxbounddist = 1.0;
+	static constexpr auto name = "ecole::CuttingSeparator";
+
+	CuttingSeparator(SCIP* scip, std::weak_ptr<utility::Controller::Executor> /*weak_executor*/);
+
+	auto scip_execlp(SCIP* scip, SCIP_SEPA* sepa, SCIP_RESULT* result, SCIP_Bool allowlocal) -> SCIP_RETCODE override;
+
+private:
+	std::weak_ptr<utility::Controller::Executor> weak_executor;
+};
 }  // namespace
 
 /****************************
@@ -264,4 +294,39 @@ auto ReverseHeur::scip_exec(
 }
 
 }  // namespace
+
+/************************************
+ *  Definition of CuttingSeperator  *
+ ***********************************/
+
+namespace {
+
+scip::CuttingSeparator::CuttingSeparator(SCIP* scip, std::weak_ptr<utility::Controller::Executor> weak_executor_) :
+	::scip::ObjSepa(
+		scip,
+		scip::CuttingSeparator::name,
+		"Seperator Rule that implements a RL-based Learning-To-Cut algorithm",
+		scip::CuttingSeparator::max_priority,
+		scip::CuttingSeparator::frequency,
+		scip::CuttingSeparator::no_maxbounddist,
+		false,
+		false),
+	weak_executor(std::move(weak_executor_)) {}
+
+auto CuttingSeparator::scip_execlp(
+	SCIP* scip,
+	SCIP_SEPA* /*sepa*/,
+	SCIP_RESULT* result,
+	SCIP_Bool /*allowlocal*/
+	) -> SCIP_RETCODE {
+	if (weak_executor.expired()) {
+		*result = SCIP_DIDNOTRUN;
+		return SCIP_OKAY;
+	}
+	auto action_func = weak_executor.lock()->hold_env();
+	return action_func(scip, result);
+}
+
+}  // namespace
+
 }  // namespace ecole::scip
