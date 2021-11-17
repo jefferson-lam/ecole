@@ -1,6 +1,12 @@
 #include <algorithm>
+#include <atomic>
 #include <cassert>
+#include <memory>
 #include <mutex>
+#include <scip/def.h>
+#include <scip/type_history.h>
+#include <scip/type_result.h>
+#include <scip/type_retcode.h>
 #include <utility>
 
 #include <objscip/objbranchrule.h>
@@ -11,6 +17,7 @@
 
 #include "ecole/scip/scimpl.hpp"
 #include "ecole/scip/utils.hpp"
+#include "ecole/utility/reverse-control.hpp"
 
 #include "utility/reverse-control.hpp"
 
