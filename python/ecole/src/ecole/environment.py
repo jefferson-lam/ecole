@@ -222,6 +222,11 @@ class Configuring(Environment):
     __Dynamics__ = ecole.dynamics.ConfiguringDynamics
 
 
+class Cutting(Environment):
+    __Dynamics__ = ecole.dynamics.CuttingDynamics
+    __DefaultObservationFunction__ = ecole.observation.NodeBipartite
+
+
 class PrimalSearch(Environment):
     __Dynamics__ = ecole.dynamics.PrimalSearchDynamics
     __DefaultObservationFunction__ = ecole.observation.NodeBipartite
