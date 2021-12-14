@@ -173,7 +173,7 @@ class Environment:
 
         """
         if not self.can_transition:
-            raise ecole.core.environment.Exception("Environment need to be reset.")
+            raise ecole.Exception("Environment need to be reset.")
 
         try:
             # Transition the environment to the next state
@@ -210,11 +210,6 @@ class Environment:
 
 class Branching(Environment):
     __Dynamics__ = ecole.dynamics.BranchingDynamics
-    __DefaultObservationFunction__ = ecole.observation.NodeBipartite
-
-
-class BranchingSum(Environment):
-    __Dynamics__ = ecole.dynamics.BranchingSumDynamics
     __DefaultObservationFunction__ = ecole.observation.NodeBipartite
 
 
