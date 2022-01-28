@@ -49,7 +49,7 @@ template <typename Class, typename... ClassArgs> struct dynamics_class : public 
 			"set_dynamics_random_state",
 			&Class::set_dynamics_random_state,
 			py::arg("model"),
-			py::arg("random_engine"),
+			py::arg("rng"),
 			py::call_guard<py::gil_scoped_release>(),
 			std::forward<Args>(args)...);
 		return *this;
@@ -88,7 +88,11 @@ void bind_submodule(pybind11::module_ const& m) {
 						Whether the instance is solved.
 						This can happen without branching, for instance if the instance is solved during presolving.
 					action_set:
-						List of branching candidates. Candidates depend on parameters in :py:meth:`__init__`.
+						List of indices of branching candidate variables.
+						Available candidates depend on parameters in :py:meth:`__init__`.
+						Variable indices (values in the ``action_set``) are their position in the original problem
+						(``SCIPvarGetProbindex``).
+						Variable ordering in the ``action_set`` is arbitrary.
 			)")
 			.def_step_dynamics(R"(
 				Branch and resume solving until next branching.
@@ -102,13 +106,19 @@ void bind_submodule(pybind11::module_ const& m) {
 						The state of the Markov Decision Process. Passed by the environment.
 					action:
 						The index the LP column of the variable to branch on. One element of the action set.
+						If an explicit ``ecole.Default`` is passed, then default SCIP branching is used, that is, the next
+						branching rule is used fetch by SCIP according to their priorities.
 
 				Returns
 				-------
 					done:
 						Whether the instance is solved.
 					action_set:
-						List of branching candidates. Candidates depend on parameters in :py:meth:`__init__`.
+						List of indices of branching candidate variables.
+						Available candidates depend on parameters in :py:meth:`__init__`.
+						Variable indices (values in the ``action_set``) are their position in the original problem
+						(``SCIPvarGetProbindex``).
+						Variables ordering in the ``action_set`` is arbitrary.
 					)")
 			.def_set_dynamics_random_state(R"(
 				Set seeds on the :py:class:`~ecole.scip.Model`.
@@ -119,7 +129,7 @@ void bind_submodule(pybind11::module_ const& m) {
 				----------
 					model:
 						The state of the Markov Decision Process. Passed by the environment.
-					random_engine:
+					rng:
 						The source of randomness. Passed by the environment.
 			)")
 			.def(py::init<bool>(), py::arg("pseudo_candidates") = false, R"(
@@ -183,7 +193,7 @@ void bind_submodule(pybind11::module_ const& m) {
 				----------
 					model:
 						The state of the Markov Decision Process. Passed by the environment.
-					random_engine:
+					rng:
 						The source of randomness. Passed by the environment.
 			)")
 			.def(py::init<>());
@@ -214,7 +224,7 @@ void bind_submodule(pybind11::module_ const& m) {
 				----------
 					model:
 						The state of the Markov Decision Process. Passed by the environment.
-					random_engine:
+					rng:
 						The source of randomness. Passed by the environment.
 			)")
 			.def_reset_dynamics(R"(

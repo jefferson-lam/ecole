@@ -39,15 +39,15 @@ def test_step(model):
 def test_step_error(model):
     """Step without reset."""
     env = MockEnvironment()
-    with pytest.raises(ecole.Exception):
+    with pytest.raises(ecole.MarkovError):
         env.step("some action")
 
 
 def test_seed():
-    """Random engine is consumed."""
+    """Random generator is consumed."""
     env = MockEnvironment()
     env.seed(33)
-    assert env.random_engine == ecole.RandomEngine(33)
+    assert env.rng == ecole.RandomGenerator(33)
 
 
 def test_scip_params(model):

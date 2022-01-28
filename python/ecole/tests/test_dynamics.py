@@ -43,15 +43,15 @@ class DynamicsUnitTests:
 
     def test_exception(self, model):
         """Bad action raise exceptions."""
-        with pytest.raises((ecole.scip.Exception, ValueError)):
+        with pytest.raises((ecole.scip.ScipError, ValueError)):
             _, action_set = self.dynamics.reset_dynamics(model)
             self.dynamics.step_dynamics(model, self.bad_policy(action_set))
 
     def test_set_random_state(self, model):
-        """Random engine is consumed."""
-        random_engine = ecole.RandomEngine(33)
-        self.dynamics.set_dynamics_random_state(model, random_engine)
-        assert random_engine != ecole.RandomEngine(33)
+        """Random generator is consumed."""
+        rng = ecole.RandomGenerator(33)
+        self.dynamics.set_dynamics_random_state(model, rng)
+        assert rng != ecole.RandomGenerator(33)
 
 
 class TestBranching(DynamicsUnitTests):
@@ -72,6 +72,12 @@ class TestBranching(DynamicsUnitTests):
 
     def setup_method(self, method):
         self.dynamics = ecole.dynamics.BranchingDynamics(False)
+
+
+class TestBranchingDefault(TestBranching):
+    @staticmethod
+    def policy(action_set):
+        return ecole.Default
 
 
 class TestBranching_Pseudocandidate(TestBranching):
