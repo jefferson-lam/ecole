@@ -3,7 +3,9 @@
 #include <cstddef>
 #include <cstdlib>
 #include <cstring>
+#include <iostream>
 #include <iterator>
+#include <scip/scip_cut.h>
 #include <stdexcept>
 #include <string>
 
@@ -220,6 +222,12 @@ nonstd::span<SCIP_VAR*> Model::pseudo_branch_cands() const {
 	return {vars, static_cast<std::size_t>(n_vars)};
 }
 
+nonstd::span<SCIP_CUT*> Model::separator_cands() const {
+	auto* const scip_ptr = const_cast<SCIP*>(get_scip_ptr());
+	std::cout << "Getting separator candidates." << std::endl;
+	return {SCIPgetPoolCuts(scip_ptr), static_cast<std::size_t>(SCIPgetNPoolCuts(scip_ptr))};
+}
+
 nonstd::span<SCIP_COL*> Model::lp_columns() const {
 	auto* const scip_ptr = const_cast<SCIP*>(get_scip_ptr());
 	if (SCIPgetStage(scip_ptr) != SCIP_STAGE_SOLVING) {
@@ -301,6 +309,14 @@ void Model::solve_iter_start_branch() {
 
 void Model::solve_iter_branch(SCIP_RESULT result) {
 	scimpl->solve_iter_branch(result);
+}
+
+void Model::solve_iter_start_cut() {
+	scimpl->solve_iter_start_cut();
+}
+
+void Model::solve_iter_cut(SCIP_RESULT result) {
+	scimpl->solve_iter_cut(result);
 }
 
 SCIP_HEUR* Model::solve_iter_start_primalsearch(int trials_per_node, int depth_freq, int depth_start, int depth_stop) {

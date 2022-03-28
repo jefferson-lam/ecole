@@ -115,7 +115,6 @@ target_link_libraries(
 		xtensor::use_xsimd
 		nonstd::span-lite
 		Threads::Threads
-	PRIVATE
 		fmt::fmt
 		range-v3::range-v3
 		robin_hood::robin_hood

@@ -12,5 +12,11 @@ add_executable(
 	src/branching.cpp
 )
 
+add_executable(
+    cutting
+    src/cutting.cpp
+)
+
 find_package(Ecole REQUIRED)
 target_link_libraries(branching Ecole::ecole-lib)
+target_link_libraries(cutting Ecole::ecole-lib)

@@ -128,6 +128,7 @@ public:
 	[[nodiscard]] ECOLE_EXPORT nonstd::span<SCIP_VAR*> variables() const noexcept;
 	[[nodiscard]] ECOLE_EXPORT nonstd::span<SCIP_VAR*> lp_branch_cands() const;
 	[[nodiscard]] ECOLE_EXPORT nonstd::span<SCIP_VAR*> pseudo_branch_cands() const;
+	[[nodiscard]] ECOLE_EXPORT nonstd::span<SCIP_CUT*> separator_cands() const;
 	[[nodiscard]] ECOLE_EXPORT nonstd::span<SCIP_COL*> lp_columns() const;
 	[[nodiscard]] ECOLE_EXPORT nonstd::span<SCIP_CONS*> constraints() const noexcept;
 	[[nodiscard]] ECOLE_EXPORT nonstd::span<SCIP_ROW*> lp_rows() const;
@@ -146,6 +147,8 @@ public:
 
 	ECOLE_EXPORT void solve_iter_start_branch();
 	ECOLE_EXPORT void solve_iter_branch(SCIP_RESULT result);
+	ECOLE_EXPORT void solve_iter_start_cut();
+	ECOLE_EXPORT void solve_iter_cut(SCIP_RESULT result);
 	ECOLE_EXPORT SCIP_HEUR*
 	solve_iter_start_primalsearch(int trials_per_node, int depth_freq, int depth_start, int depth_stop);
 	ECOLE_EXPORT void solve_iter_primalsearch(SCIP_RESULT result);

@@ -1,12 +1,15 @@
 #include <algorithm>
 #include <cassert>
+#include <iostream>
 #include <mutex>
+#include <scip/sepa_strongcg.h>
 #include <utility>
 
 #include <objscip/objbranchrule.h>
 #include <objscip/objheur.h>
 #include <objscip/objsepa.h>
 #include <scip/scip.h>
+#include <scip/scip_mem.h>
 #include <scip/scipdefplugins.h>
 
 #include "ecole/scip/scimpl.hpp"
@@ -83,7 +86,7 @@ public:
 	static constexpr SCIP_Real no_maxbounddist = 1.0;
 	static constexpr auto name = "ecole::CuttingSeparator";
 
-	CuttingSeparator(SCIP* scip, std::weak_ptr<utility::Controller::Executor> /*weak_executor*/);
+	CuttingSeparator(SCIP* scip, std::weak_ptr<utility::Controller::Executor> weak_executor);
 
 	auto scip_execlp(SCIP* scip, SCIP_SEPA* sepa, SCIP_RESULT* result, SCIP_Bool allowlocal) -> SCIP_RETCODE override;
 
@@ -175,6 +178,24 @@ void scip::Scimpl::solve_iter_branch(SCIP_RESULT result) {
 		return SCIP_OKAY;
 	});
 
+	m_controller->wait_thread();
+}
+
+void Scimpl::solve_iter_start_cut() {
+	auto* const scip_ptr = get_scip_ptr();
+	m_controller = std::make_unique<utility::Controller>([=](std::weak_ptr<utility::Controller::Executor> weak_executor) {
+		scip::call(SCIPincludeObjSepa, scip_ptr, new CuttingSeparator(scip_ptr, std::move(weak_executor)), true);  // NOLINT
+		scip::call(SCIPsolve, scip_ptr);                                                                           // NOLINT
+	});
+
+	m_controller->wait_thread();
+}
+
+void scip::Scimpl::solve_iter_cut(SCIP_RESULT result) {
+	m_controller->resume_thread([result](SCIP* /*scip*/, SCIP_RESULT* final_result) {
+		*final_result = result;
+		return SCIP_OKAY;
+	});
 	m_controller->wait_thread();
 }
 

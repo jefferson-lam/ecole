@@ -329,9 +329,10 @@ function install_lib {
 
 # Test the intallation of libecole withe the cmake example.
 function test_example_libecole {
-	local -r install_dir="${1-${build_dir}/local}"
+	local -r install_dir="/Users/jeffersonlam/code/ecole/build/local"
 	if_rebuild_then install_lib "${install_dir}"
-	local -r ecole_dir="$(find "${install_dir}" -name "EcoleConfig.cmake" | head -1 | xargs dirname | xargs realpath)"
+    echo ${install_dir}
+	local -r ecole_dir="/Users/jeffersonlam/code/ecole/build/local/lib/cmake/Ecole/"
 	local -r example_build_dir="${build_dir}/examples"
 	execute cmake -B "${example_build_dir}" -S "${source_dir}/examples/libecole" -D Ecole_DIR="${ecole_dir}"
 	execute cmake --build "${example_build_dir}"
